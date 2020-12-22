@@ -51,12 +51,10 @@ The event must be called `upload_deleted` and it must also send an `x-hasura-upl
 
 Hasura Upload Manager is a tiny [Deno] application, which can be run by [installing][deno_inst] Deno and running:
 
-    git clone https://github.com/katharostech/hasura_upload-manager.git
-    cd hasura_upload-manager
     export HASURA_UPLOAD_MANAGER_SECRET="secret"
     export HASURA_URL="http://my-hasura-server"
     export DATA_DIR="/uploads/path"
-    deno run --allow-net=$HASURA_URL --allow-read=$DATA_DIR --allow-write=$DATA_DIR --allow-env index.ts
+    deno run --allow-net=$HASURA_URL --allow-read=$DATA_DIR --allow-write=$DATA_DIR --allow-env https://raw.githubusercontent.com/katharostech/hasura_upload-manager/master/index.ts
 
 [deno]: https://deno.land
 [deno_inst]: https://deno.land/#installation
