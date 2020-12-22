@@ -1,5 +1,7 @@
 # Hasura Upload Manager
 
+[![](https://tokei.rs/b1/github/XAMPPRocky/tokei)](https://github.com/katharostech/hasura_upload-manager).
+
 > **Note:** This is _just_ out the door and is hardly tested. There may be bugs and it is hardly documented. Still the concept is sound, the code is ultra simple and short, and you might be able to re-purpose it for your own designs.
 
 Hasura Upload Manager is a super simple solution for managing uploads in [Hasura].
