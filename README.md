@@ -16,7 +16,7 @@ This service was designed to provide a method of managing hasura uploads that al
 
 ## How it Works
 
-Hasura Upload Manager works by creating an `uploads` table in the Hasura database. This table has only one column: `id`. If you were using uploads for posts in a blog, for example, you would add a column to that table such as `post_id` and setup a foreign key and a hasura relationship that ties each upload to a particular post.
+Hasura Upload Manager works by creating an `uploads` table in the Hasura database. This table requires only two columns: a mandatory, unique `id`, and an optional `name`. If you were using uploads for posts in a blog, you would add an additional column to that table such as `post_id` and setup a foreign key and a hasura relationship that ties each upload to a particular post.
 
 With the relationship between posts and uploads established, you can now use hasura to set the permissions on the uploads table to reflect situations like:
 
@@ -39,7 +39,7 @@ When you delete an upload from from the uploads table a hasura event will go tel
 
 ### The Uploads Table
 
-In order to use with your Hasura instance, you have just have to create an `uploads` table with an `id` column in the `public` schema. This table can have any number of _other_ columns or relationships that you need to help establish the permissions needed for your app.
+In order to use with your Hasura instance, you have just have to create an `uploads` table with an auto-generated `id` column and a `name` column of type `Text` in the `public` schema. This table can have any number of _other_ columns or relationships that you need to help establish the permissions needed for your app.
 
 ### The `upload_deleted` Event
 
@@ -64,3 +64,15 @@ Hasura Upload Manager is a tiny [Deno] application, which can be run by [install
 > **Note:** The Hasura Upload Manager currently only works with Hasura when Hasura is using JWT auth, but it would be trivial to modify it to work with other auth methods such as webhook auth.
 
 Hasura Upload Manager is configured to read the `__Host-Authorization` cookie, which must contain the JWT token that identifies the current user in order to authenticate requests. Hasura Upload Manger will send the contents of this cookie, if present, as the bearer token to the Hasura server when validating permissions to the upload. If the cookie is not present, the user will be considered anonymous.
+
+## The REST API
+
+> **Note:** If you are required to be authenticated to access your uploads by your hasura access control, you will need to include your JWT in the `__Host-Authorization` cookie, which, during testing, can be done by manually setting the `Cookie` header to `__Host-Authorization=[your_jwt]`. See above section about "Handling Auth in your Frontend".
+
+### Getting an Upload
+
+To get an upload, you simply make a get request to `/uploads/[upload_id]`. Note that the file has no extension, which can cause problems for certain kinds of uploads in different situations. For instance, the browser may fail to recognized an SVG file as an SVG file if it does not end in `.svg`. To work around this you can add an arbitrary name to your file by adding an extra path component after the id, such as `/uploads/[upload_id]/image.svg`.
+
+### Uploading an Upload
+
+To actually make a file upload you make a `POST` request to `/uploads/[upload_id]`. Just like the upload GET request, you can specify and optional name for your upload in the URL: `/uploads/[upload_id]/[upload_name]`. This will set the value of the `name` column in the `uploads` table when specified, and it will unset the value of the column when it isn't specified. The file must be added in the form-data as an uploaded file which may be named anything. Only one file may be uploaded to the endpoint.

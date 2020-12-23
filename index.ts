@@ -44,11 +44,16 @@ async function handleUploadDeleted(
   body: HasuraEventPayload
 ): Promise<void> {
   const id = body.event.data.old.id as string;
-  console.log(id);
   try {
     await Deno.remove(DATA_DIR + "/" + id);
   } catch (e) {
-    console.warn("Could not delete upload", e);
+    if (e.name == "NotFound") {
+      console.info(
+        "Upload not deleted because it did not exist on disk: " + id
+      );
+    } else {
+      console.error("Could not delete upload", e);
+    }
   }
 
   ctx.response.status = Status.OK;
@@ -58,7 +63,7 @@ async function handleUploadDeleted(
 // Register upload content endpoints
 //
 
-router.get("/uploads/:id", async (ctx) => {
+router.get("/uploads/:id/:name?", async (ctx) => {
   // Get the JWT from the authorization header
   const jwt = getCookies({ headers: ctx.request.headers })[
     "__Host-Authorization"
@@ -100,7 +105,7 @@ router.get("/uploads/:id", async (ctx) => {
   }
 });
 
-router.post("/uploads/:id", async (ctx) => {
+router.post("/uploads/:id/:name?", async (ctx) => {
   // Get the JWT from the authorization header
   const jwt = getCookies({ headers: ctx.request.headers })[
     "__Host-Authorization"
@@ -119,15 +124,13 @@ router.post("/uploads/:id", async (ctx) => {
   try {
     const resp = await hasuraClient.call(
       gql`
-        mutation Upload($id: uuid!) {
+        mutation Upload($id: uuid!, $name: String) {
           upload: update_uploads_by_pk(
             pk_columns: { id: $id }
-            # This does not actually need to change anything, it just needs to make sure that
-            # the user has write access to the record
-            _set: { id: $id }
+            # Set the upload name if specified in the URL
+            _set: { name: $name }
           ) {
             id
-            __typename
           }
         }
       `,
